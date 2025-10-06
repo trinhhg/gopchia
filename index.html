@@ -4,48 +4,49 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Gộp & Chia Chương</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap">
   <link rel="stylesheet" href="index.css">
 </head>
 <body>
-  <header>
-    <h1>📘 Gộp & Chia Chương</h1>
-    <nav>
-      <button id="tab-gop" class="active">Gộp chương</button>
-      <button id="tab-chia">Chia chương</button>
-    </nav>
+  <header class="tabs">
+    <button id="tab-merge" class="active">Gộp chương</button>
+    <button id="tab-split">Chia chương</button>
   </header>
 
-  <!-- TAB GỘP -->
-  <section id="gop-chuong" class="tab active">
-    <div class="panel">
-      <textarea id="gop-input" placeholder="Dán nội dung nhiều chương tại đây..."></textarea>
-      <div class="word-count">0 từ</div>
-      <button id="btn-gop">Gộp chương</button>
-    </div>
-    <div class="output-panel">
-      <div class="folder-input">
-        <label>Tên thư mục:</label>
-        <input type="text" id="folder-name" placeholder="TenTruyen_GopChuong">
+  <!-- Gộp chương -->
+  <section id="merge-tab" class="tab-content">
+    <div class="merge-grid">
+      <div class="merge-input">
+        <textarea id="merge-input-text" placeholder="Dán nội dung nhiều chương tại đây..."></textarea>
+        <div class="merge-controls">
+          <button id="merge-btn">Gộp chương</button>
+          <span id="merge-wordcount">0 từ</span>
+        </div>
       </div>
-      <div id="gop-results"></div>
-      <button id="download-all">Tải tất cả (ZIP)</button>
+      <div class="merge-output">
+        <!-- Danh sách chương gộp -->
+        <div id="merged-list"></div>
+      </div>
+      <div class="merge-export">
+        <input id="folder-name" type="text" placeholder="Tên thư mục">
+        <button id="download-all">Tải tất cả (ZIP)</button>
+        <div id="chapter-downloads"></div>
+      </div>
     </div>
   </section>
 
-  <!-- TAB CHIA -->
-  <section id="chia-chuong" class="tab">
-    <div class="chia-controls">
-      <textarea id="chia-input" placeholder="Dán nội dung chương cần chia..."></textarea>
-      <div class="tools">
-        <div id="word-count">0 từ</div>
-        <div class="chia-buttons">
-          <label>Số chương:</label>
-          <div id="split-options"></div>
-        </div>
-        <button id="btn-chia">Chia chương</button>
+  <!-- Chia chương -->
+  <section id="split-tab" class="tab-content hidden">
+    <div class="split-top">
+      <div class="split-controls">
+        <label>Số chương:</label>
+        <div class="split-buttons" id="split-options"></div>
       </div>
+      <textarea id="split-input" placeholder="Dán nội dung chương cần chia..."></textarea>
+      <span id="split-wordcount">0 từ</span>
+      <button id="split-btn">Chia chương</button>
     </div>
-    <div class="chia-results-grid" id="chia-results"></div>
+    <div class="split-results" id="split-results"></div>
   </section>
 
   <!-- Thư viện từ CDN -->
