@@ -9,9 +9,9 @@ tabSplit.onclick = () => switchTab("split");
 
 function switchTab(tab) {
   tabMerge.classList.toggle("active", tab === "merge");
-  tabSplit.classList.toggle("active", tab === "split");
+  tabSplit.classList.toggle("active", tab !== "merge");
   mergeTab.classList.toggle("hidden", tab !== "merge");
-  splitTab.classList.toggle("hidden", tab !== "split");
+  splitTab.classList.toggle("hidden", tab === "merge");
 }
 
 // Word count function
@@ -26,34 +26,25 @@ document.getElementById("merge-btn").onclick = () => {
   const text = document.getElementById("merge-input-text").value;
   if (!text.trim()) return alert("Vui lòng nhập nội dung!");
 
-  chapters = {};
-  const lines = text.split(/(?=Chương\s+\d+\.\d+)/gi);
-
-  lines.forEach(ch => {
-    const match = ch.match(/Chương\s+(\d+)\.\d+\s*:\s*([^\n]*)/i);
-    if (match) {
-      const main = match[1];
-      const content = ch.replace(/Chương\s+\d+\.\d+\s*:[^\n]*\n?/, "").trim();
-      chapters[main] = (chapters[main] || "") + (content ? content + "\n\n" : "");
-    }
-  });
+  chapters = groupChapters(text);
 
   const mergedList = document.getElementById("merged-list");
   mergedList.innerHTML = "";
   const chapterDownloads = document.getElementById("chapter-downloads");
   chapterDownloads.innerHTML = "";
 
-  for (const key in chapters) {
-    const wordCount = countWords(chapters[key]);
+  chapters.forEach((ch, index) => {
+    const num = ch.title.split(' ')[1];
+    const wordCount = countWords(ch.text);
     const item = document.createElement("div");
     item.className = "chapter-item";
     item.innerHTML = `
       <div class="chapter-header">
-        <span>Chương ${key} (${wordCount} từ)</span>
+        <span>${ch.title} (${wordCount} từ)</span>
         <span>⬇️</span>
       </div>
       <div class="chapter-content">
-        <textarea readonly>${chapters[key]}</textarea>
+        <textarea readonly>${ch.text}</textarea>
       </div>
     `;
     mergedList.appendChild(item);
@@ -68,15 +59,17 @@ document.getElementById("merge-btn").onclick = () => {
     // Nút tải riêng
     const dlBtn = document.createElement("button");
     dlBtn.className = "chapter-download-btn";
-    dlBtn.textContent = `Tải Chương ${key} (DOCX)`;
-    dlBtn.dataset.num = key;
+    dlBtn.textContent = `Tải Chương ${num} (DOCX)`;
+    dlBtn.dataset.num = num;
+    dlBtn.dataset.text = ch.text;
     chapterDownloads.appendChild(dlBtn);
-  }
+  });
 
   // Download individual DOCX
   document.querySelectorAll(".chapter-download-btn").forEach(btn => {
     btn.onclick = async () => {
       const num = btn.dataset.num;
+      const text = btn.dataset.text;
       const doc = new docx.Document({
         sections: [{
           properties: {},
@@ -85,7 +78,7 @@ document.getElementById("merge-btn").onclick = () => {
               text: `Chương ${num}`,
               heading: docx.HeadingLevel.HEADING_1
             }),
-            new docx.Paragraph(chapters[num])
+            new docx.Paragraph(text)
           ]
         }]
       });
@@ -95,28 +88,53 @@ document.getElementById("merge-btn").onclick = () => {
   });
 };
 
+// Logic group chapters
+function groupChapters(text) {
+  const lines = text.split(/\n+/);
+  const chaptersMap = {};
+  let currentMain = null;
+
+  lines.forEach(line => {
+    const match = line.match(/Chương\s+(\d+)\.(\d+)/i);
+    if (match) {
+      const main = match[1];
+      if (!chaptersMap[main]) chaptersMap[main] = [];
+      currentMain = main;
+      chaptersMap[main].push(line);
+    } else if (currentMain) {
+      chaptersMap[currentMain].push(line);
+    }
+  });
+
+  return Object.entries(chaptersMap).map(([num, content]) => ({
+    title: `Chương ${num}`,
+    text: content.join('\n').trim()
+  }));
+}
+
 // Download all as ZIP
 document.getElementById("download-all").onclick = async () => {
-  if (Object.keys(chapters).length === 0) return alert("Chưa có chương để tải!");
+  if (chapters.length === 0) return alert("Chưa có chương để tải!");
   const zip = new JSZip();
   const folderName = document.getElementById("folder-name").value || "GopChuong";
   const folder = zip.folder(folderName);
 
-  for (const key in chapters) {
+  for (const ch of chapters) {
+    const num = ch.title.split(' ')[1];
     const doc = new docx.Document({
       sections: [{
         properties: {},
         children: [
           new docx.Paragraph({
-            text: `Chương ${key}`,
+            text: ch.title,
             heading: docx.HeadingLevel.HEADING_1
           }),
-          new docx.Paragraph(chapters[key])
+          new docx.Paragraph(ch.text)
         ]
       }]
     });
     const blob = await docx.Packer.toBlob(doc);
-    folder.file(`Chuong_${key}.docx`, blob);
+    folder.file(`Chuong_${num}.docx`, blob);
   }
 
   zip.generateAsync({ type: "blob" }).then(blob => {
@@ -152,6 +170,9 @@ function selectSplit(num) {
   document.querySelectorAll(".output-box").forEach((el, i) => {
     el.classList.toggle("active", i < num);
   });
+  // Reset outputs
+  document.querySelectorAll(".output-box textarea").forEach(t => t.value = "");
+  document.querySelectorAll(".output-box .word-count").forEach(w => w.textContent = "0 từ");
 }
 
 // Tạo sẵn 11 ô output
@@ -180,40 +201,30 @@ document.getElementById("split-btn").onclick = () => {
   const text = splitInput.value.trim();
   if (!text) return alert("Vui lòng nhập nội dung!");
 
-  const parts = splitText(text, currentSplit);
+  const parts = splitTextIntoParts(text, currentSplit);
   parts.forEach((p, i) => {
     const out = document.getElementById(`out${i + 1}`);
-    out.value = p.trim();
-    const wordCount = countWords(p);
+    out.value = `Chương 1.${i + 1}\n\n${p.trim()}`;
+    const wordCount = countWords(out.value);
     out.parentElement.querySelector(".word-count").textContent = `${wordCount} từ`;
     out.parentElement.querySelector("h4").textContent = `Chương 1.${i + 1}`;
   });
+
+  // Clear input after split
+  splitInput.value = "";
 };
 
-// Chia đều văn bản (chia mềm, ngắt ở dấu chấm hoặc xuống dòng)
-function splitText(text, parts) {
-  const totalLength = text.length;
-  const chunkSize = Math.ceil(totalLength / parts);
-  const chunks = [];
-  let start = 0;
-
+// Chia theo từ
+function splitTextIntoParts(text, parts) {
+  const words = text.split(/\s+/);
+  const perPart = Math.ceil(words.length / parts);
+  const result = [];
   for (let i = 0; i < parts; i++) {
-    let end = start + chunkSize;
-    if (end >= totalLength) {
-      chunks.push(text.slice(start));
-      break;
-    }
-
-    // Tìm vị trí ngắt gần nhất: dấu chấm, dấu chấm than, dấu hỏi, hoặc xuống dòng
-    while (end < totalLength && !/[.!?]\s|\n/.test(text[end])) {
-      end++;
-    }
-    if (end < totalLength) end++; // Bỏ qua khoảng trắng hoặc xuống dòng
-    chunks.push(text.slice(start, end));
-    start = end;
+    const start = i * perPart;
+    const end = start + perPart;
+    result.push(words.slice(start, end).join(' ').trim());
   }
-
-  return chunks;
+  return result;
 }
 
 // Sao chép nội dung
@@ -223,7 +234,11 @@ document.addEventListener("click", e => {
     const ta = document.getElementById(`out${id}`);
     ta.select();
     document.execCommand("copy");
-    e.target.textContent = "Đã sao chép!";
-    setTimeout(() => e.target.textContent = `Sao chép`, 1000);
+    e.target.textContent = "Đã sao chép";
+    e.target.classList.add("copy-success");
+    setTimeout(() => {
+      e.target.textContent = `Sao chép`;
+      e.target.classList.remove("copy-success");
+    }, 1500);
   }
 });
