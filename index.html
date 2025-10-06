@@ -15,11 +15,15 @@
         <button id="tab-chia" class="tab-button">Chia chương</button>
     </nav>
     <div id="content-gop" class="tab-content active">
-        <textarea id="input-gop" placeholder="Paste nội dung các chương nhỏ ở đây, ví dụ:&#10;Chương 1.1: Mở đầu&#10;Nội dung...&#10;Chương 1.2: Cao trào&#10;Nội dung..."></textarea>
-        <input type="text" id="folder-name" placeholder="Tên thư mục cho file (tùy chọn)">
-        <button id="process-gop">Xử lý gộp</button>
-        <div id="preview-gop"></div>
-        <button id="download-all-zip">Tải tất cả (ZIP)</button>
+        <div class="left">
+            <textarea id="input-gop" placeholder="Paste nội dung các chương nhỏ ở đây, ví dụ:&#10;Chương 1.1: Mở đầu&#10;Nội dung...&#10;Chương 1.2: Cao trào&#10;Nội dung..."></textarea>
+            <input type="text" id="folder-name" placeholder="Tên thư mục cho file (tùy chọn)">
+            <button id="process-gop">Xử lý gộp</button>
+        </div>
+        <div class="right">
+            <div id="preview-gop"></div>
+            <button id="download-all-zip">Tải tất cả (ZIP)</button>
+        </div>
     </div>
     <div id="content-chia" class="tab-content">
         <input type="text" id="chapter-number" placeholder="Số chương chính (ví dụ: 1)" value="1">
@@ -39,7 +43,7 @@
             <button class="split-btn" data-parts="10">10</button>
         </div>
         <button id="process-chia">Chia chương</button>
-        <div id="outputs-chia" class="outputs-grid">
+        <div id="outputs-chia" class="outputs-flex">
             <div class="output-item" id="output-1">
                 <textarea></textarea>
                 <div class="word-count">0 từ</div>
@@ -91,6 +95,7 @@
                 <button class="copy-btn">Sao chép 10</button>
             </div>
         </div>
+        <button id="copy-all">Copy all</button>
     </div>
     <script src="script.js"></script>
 </body>
