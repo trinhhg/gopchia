@@ -31,6 +31,9 @@ body {
 
 .tab-content {
   padding: 20px;
+  height: calc(100vh - 50px); /* Adjust for header height */
+  box-sizing: border-box;
+  overflow: auto;
 }
 
 .hidden {
@@ -40,13 +43,14 @@ body {
 textarea {
   width: 100%;
   min-height: 200px;
+  height: calc(100% - 60px);
   padding: 10px;
   font-family: monospace;
   border: 1px solid #ddd;
   border-radius: 6px;
   font-size: 14px;
   line-height: 1.6;
-  resize: vertical;
+  resize: none;
 }
 
 /* Gộp chương */
@@ -54,23 +58,37 @@ textarea {
   display: grid;
   grid-template-columns: 1fr 1fr 0.6fr;
   gap: 15px;
-  padding: 20px;
+  height: 100%;
+}
+
+.merge-input, .merge-output, .merge-export {
+  overflow: auto;
 }
 
 .merge-controls {
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
   align-items: center;
+  justify-content: center;
   margin-top: 10px;
 }
 
 .merge-controls button {
+  width: 100%;
   background: #007bff;
   color: #fff;
   border: none;
   padding: 10px 20px;
   border-radius: 6px;
   cursor: pointer;
+  height: 40px;
+  margin-top: 8px;
+}
+
+.center-text {
+  text-align: center;
+  margin-bottom: 5px;
+  font-weight: 600;
 }
 
 .merge-output .chapter-item {
@@ -236,6 +254,11 @@ textarea {
   padding: 8px;
   border-radius: 6px;
   cursor: pointer;
+}
+
+.copy-success {
+  color: #28a745;
+  font-weight: 500;
 }
 
 /* Responsive */
