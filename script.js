@@ -19,9 +19,9 @@ tabChia.addEventListener('click', () => {
     contentGop.classList.remove('active');
 });
 
-// Word count function (approximates MS Word: counts word boundaries)
+// Word count function (approximates MS Word, handles Unicode)
 function countWords(text) {
-    return (text.match(/\b\w+\b/g) || []).length;
+    return (text.match(/[\p{L}\p{N}]+/gu) || []).length;
 }
 
 // Tab Gộp chương
@@ -50,7 +50,7 @@ document.getElementById('process-gop').addEventListener('click', () => {
 
     Object.keys(groups).sort((a, b) => a - b).forEach(main => {
         const g = groups[main];
-        const newTitle = `Chương ${main}: ${g.titles.join(' - ')}`;
+        const newTitle = `Chương ${main}${g.titles.length ? ': ' + g.titles.join(' - ') : ''}`;
         const fullContent = `${newTitle}\n\n${g.content.trim()}`;
         const div = document.createElement('div');
         div.innerHTML = `
@@ -68,11 +68,9 @@ window.downloadDocx = function(chapNum, content) {
     const doc = new docx.Document({
         sections: [{
             properties: {},
-            children: [
-                new docx.Paragraph({
-                    children: [new docx.TextRun(content)],
-                }),
-            ],
+            children: content.split(/\n\n+/).map(p => new docx.Paragraph({
+                children: [new docx.TextRun(p.trim())],
+            })),
         }],
     });
     docx.Packer.toBlob(doc).then(blob => {
@@ -89,11 +87,13 @@ document.getElementById('download-all-zip').addEventListener('click', () => {
 
     Object.keys(groups).sort((a, b) => a - b).forEach(main => {
         const g = groups[main];
-        const newTitle = `Chương ${main}: ${g.titles.join(' - ')}`;
+        const newTitle = `Chương ${main}${g.titles.length ? ': ' + g.titles.join(' - ') : ''}`;
         const fullContent = `${newTitle}\n\n${g.content.trim()}`;
         const doc = new docx.Document({
             sections: [{
-                children: [new docx.Paragraph({ children: [new docx.TextRun(fullContent)] })],
+                children: fullContent.split(/\n\n+/).map(p => new docx.Paragraph({
+                    children: [new docx.TextRun(p.trim())],
+                })),
             }],
         });
         promises.push(
@@ -140,15 +140,15 @@ document.getElementById('process-chia').addEventListener('click', () => {
         const targetWords = wordsPerPart * i - currentWordCount;
         let splitPos = 0;
         let wordCount = 0;
-        const regex = /\b\w+\b/g;
+        const regex = /[\p{L}\p{N}]+/gu;
         let match;
         while ((match = regex.exec(remaining)) !== null && wordCount < targetWords) {
             splitPos = regex.lastIndex;
             wordCount++;
         }
         // Find nearest sentence end after splitPos
-        const sentenceEnd = remaining.slice(splitPos).search(/[.!?]\s+/) + splitPos;
-        if (sentenceEnd > splitPos) splitPos = sentenceEnd + 1; // Include the punctuation and space
+        const sentenceEnd = remaining.slice(splitPos).search(/[.!?]\s+/) + splitPos + 1;
+        if (sentenceEnd > splitPos) splitPos = sentenceEnd;
 
         const part = remaining.substring(0, splitPos).trim();
         parts.push(part);
@@ -157,10 +157,18 @@ document.getElementById('process-chia').addEventListener('click', () => {
     }
     parts.push(remaining);
 
-    // Add titles and double newlines
+    // Add titles and double newlines between paragraphs
     const titledParts = parts.map((part, idx) => {
-        const title = `Chương ${chapNum}.${idx + 1}: ${chapName} (Phần ${idx + 1})`;
-        return `${title}\n\n${part.replace(/\n/g, '\n\n')}`;
+        const title = `Chương ${chapNum}.${idx + 1}: ${chapName ? chapName + ' ' : ''}(Phần ${idx + 1})`;
+        const formattedPart = part.split(/\n+/).map(p => p.trim()).filter(p => p).join('\n\n');
+        return `${title}\n\n${formattedPart}`;
+    });
+
+    // Set item widths
+    const maxPerRow = 5;
+    const basis = (selectedParts <= maxPerRow) ? (100 / selectedParts) : (100 / maxPerRow);
+    document.querySelectorAll('.output-item').forEach(item => {
+        item.style.flex = `1 0 calc(${basis}% - 10px)`;
     });
 
     // Display in outputs
@@ -188,8 +196,22 @@ document.querySelectorAll('.output-item textarea').forEach(ta => {
 // Copy buttons
 document.querySelectorAll('.copy-btn').forEach(btn => {
     btn.addEventListener('click', () => {
-        const ta = btn.previousElementSibling.previousElementSibling; // textarea
+        const ta = btn.previousElementSibling.previousElementSibling;
         ta.select();
         document.execCommand('copy');
     });
+});
+
+// Copy all
+document.getElementById('copy-all').addEventListener('click', () => {
+    const allText = Array.from(document.querySelectorAll('.output-item textarea'))
+        .filter(ta => ta.closest('.output-item').style.display !== 'none')
+        .map(ta => ta.value)
+        .join('\n\n---\n\n');
+    const temp = document.createElement('textarea');
+    temp.value = allText;
+    document.body.appendChild(temp);
+    temp.select();
+    document.execCommand('copy');
+    document.body.removeChild(temp);
 });
