@@ -66,6 +66,19 @@ button:hover {
     background: #0056b3;
 }
 
+#content-gop {
+    display: flex;
+    gap: 20px;
+}
+
+.left, .right {
+    flex: 1;
+}
+
+.right {
+    overflow-y: auto;
+}
+
 #preview-gop > div {
     margin-bottom: 20px;
     border-bottom: 1px solid #ddd;
@@ -86,9 +99,9 @@ button:hover {
     color: #fff;
 }
 
-.outputs-grid {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
+.outputs-flex {
+    display: flex;
+    flex-wrap: wrap;
     gap: 10px;
     margin-top: 20px;
 }
@@ -96,10 +109,12 @@ button:hover {
 .output-item {
     display: none;
     flex-direction: column;
+    box-sizing: border-box;
 }
 
 .output-item textarea {
     height: 150px;
+    resize: vertical;
 }
 
 .word-count {
