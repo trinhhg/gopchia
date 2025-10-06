@@ -1,102 +1,56 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Web Gộp & Chia Chương</title>
-    <link rel="stylesheet" href="style.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.0/FileSaver.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gộp & Chia Chương</title>
+  <link rel="stylesheet" href="index.css">
 </head>
 <body>
+  <header>
+    <h1>📘 Gộp & Chia Chương</h1>
     <nav>
-        <button id="tab-gop" class="tab-button active">Gộp chương</button>
-        <button id="tab-chia" class="tab-button">Chia chương</button>
+      <button id="tab-gop" class="active">Gộp chương</button>
+      <button id="tab-chia">Chia chương</button>
     </nav>
-    <div id="content-gop" class="tab-content active">
-        <div class="left">
-            <textarea id="input-gop" placeholder="Paste nội dung các chương nhỏ ở đây, ví dụ:&#10;Chương 1.1: Mở đầu&#10;Nội dung...&#10;Chương 1.2: Cao trào&#10;Nội dung..."></textarea>
-            <input type="text" id="folder-name" placeholder="Tên thư mục cho file (tùy chọn)">
-            <button id="process-gop">Xử lý gộp</button>
-        </div>
-        <div class="right">
-            <div id="preview-gop"></div>
-            <button id="download-all-zip">Tải tất cả (ZIP)</button>
-        </div>
+  </header>
+
+  <!-- TAB GỘP -->
+  <section id="gop-chuong" class="tab active">
+    <div class="panel">
+      <textarea id="gop-input" placeholder="Dán nội dung nhiều chương tại đây..."></textarea>
+      <div class="word-count">0 từ</div>
+      <button id="btn-gop">Gộp chương</button>
     </div>
-    <div id="content-chia" class="tab-content">
-        <input type="text" id="chapter-number" placeholder="Số chương chính (ví dụ: 1)" value="1">
-        <input type="text" id="chapter-name" placeholder="Tên chương gốc (ví dụ: Hành trình)">
-        <textarea id="input-chia" placeholder="Paste nội dung chương lớn ở đây..."></textarea>
-        <div id="word-count-input">0 từ</div>
-        <div class="split-options">
-            <label>Chia thành:</label>
-            <button class="split-btn active" data-parts="2">2</button>
-            <button class="split-btn" data-parts="3">3</button>
-            <button class="split-btn" data-parts="4">4</button>
-            <button class="split-btn" data-parts="5">5</button>
-            <button class="split-btn" data-parts="6">6</button>
-            <button class="split-btn" data-parts="7">7</button>
-            <button class="split-btn" data-parts="8">8</button>
-            <button class="split-btn" data-parts="9">9</button>
-            <button class="split-btn" data-parts="10">10</button>
-        </div>
-        <button id="process-chia">Chia chương</button>
-        <div id="outputs-chia" class="outputs-flex">
-            <div class="output-item" id="output-1">
-                <textarea></textarea>
-                <div class="word-count">0 từ</div>
-                <button class="copy-btn">Sao chép 1</button>
-            </div>
-            <div class="output-item" id="output-2">
-                <textarea></textarea>
-                <div class="word-count">0 từ</div>
-                <button class="copy-btn">Sao chép 2</button>
-            </div>
-            <div class="output-item" id="output-3">
-                <textarea></textarea>
-                <div class="word-count">0 từ</div>
-                <button class="copy-btn">Sao chép 3</button>
-            </div>
-            <div class="output-item" id="output-4">
-                <textarea></textarea>
-                <div class="word-count">0 từ</div>
-                <button class="copy-btn">Sao chép 4</button>
-            </div>
-            <div class="output-item" id="output-5">
-                <textarea></textarea>
-                <div class="word-count">0 từ</div>
-                <button class="copy-btn">Sao chép 5</button>
-            </div>
-            <div class="output-item" id="output-6">
-                <textarea></textarea>
-                <div class="word-count">0 từ</div>
-                <button class="copy-btn">Sao chép 6</button>
-            </div>
-            <div class="output-item" id="output-7">
-                <textarea></textarea>
-                <div class="word-count">0 từ</div>
-                <button class="copy-btn">Sao chép 7</button>
-            </div>
-            <div class="output-item" id="output-8">
-                <textarea></textarea>
-                <div class="word-count">0 từ</div>
-                <button class="copy-btn">Sao chép 8</button>
-            </div>
-            <div class="output-item" id="output-9">
-                <textarea></textarea>
-                <div class="word-count">0 từ</div>
-                <button class="copy-btn">Sao chép 9</button>
-            </div>
-            <div class="output-item" id="output-10">
-                <textarea></textarea>
-                <div class="word-count">0 từ</div>
-                <button class="copy-btn">Sao chép 10</button>
-            </div>
-        </div>
-        <button id="copy-all">Copy all</button>
+    <div class="output-panel">
+      <div class="folder-input">
+        <label>Tên thư mục:</label>
+        <input type="text" id="folder-name" placeholder="TenTruyen_GopChuong">
+      </div>
+      <div id="gop-results"></div>
+      <button id="download-all">Tải tất cả (ZIP)</button>
     </div>
-    <script src="script.js"></script>
+  </section>
+
+  <!-- TAB CHIA -->
+  <section id="chia-chuong" class="tab">
+    <div class="chia-controls">
+      <textarea id="chia-input" placeholder="Dán nội dung chương cần chia..."></textarea>
+      <div class="tools">
+        <div id="word-count">0 từ</div>
+        <div class="chia-buttons">
+          <label>Số chương:</label>
+          <div id="split-options"></div>
+        </div>
+        <button id="btn-chia">Chia chương</button>
+      </div>
+    </div>
+    <div class="chia-results-grid" id="chia-results"></div>
+  </section>
+
+  <script src="libs/jszip.min.js"></script>
+  <script src="libs/FileSaver.min.js"></script>
+  <script src="libs/docx.js"></script>
+  <script src="index.js"></script>
 </body>
 </html>
